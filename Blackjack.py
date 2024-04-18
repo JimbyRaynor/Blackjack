@@ -6,35 +6,45 @@ import random
 import time
 
 mainwin = Tk()
-mainwin.geometry("800x400")
+mainwin.geometry("800x600")
 button1 = Button(mainwin, text="Hello World")
-button1.place(x=170, y = 100)
+button1.place(x=170, y = 500)
 
 
-xgap = 153
+xgap = 60
 
 
 # NEED to store returned pointers as GLOBAL variables
 # CANNOT use PhotoImage inside a function, otherwise
 
-player1a = Canvas(mainwin, width = 64, height = 64)
-player1aimage = PhotoImage(file="Cards\card_back.png")
-player1asprite = player1a.create_image(0,0,anchor=NW,image=player1aimage)
-player1a.place(x=120,y=0)
-player1b = Canvas(mainwin, width = 64, height = 64)
-player1bimage = PhotoImage(file="Cards\card_back.png")
-player1bsprite = player1b.create_image(0,0,anchor=NW,image=player1bimage)
-player1b.place(x=120+xgap,y=0)
-player1c = Canvas(mainwin, width = 64, height = 64)
-player1cimage = PhotoImage(file="Cards\card_back.png")
-player1csprite = player1c.create_image(0,0,anchor=NW,image=player1cimage)
-player1c.place(x=120+xgap*2,y=0)
-player1d = Canvas(mainwin, width = 64, height = 64)
-player1dimage = PhotoImage(file="Cards\card_back.png")
-player1dsprite = player1d.create_image(0,0,anchor=NW,image=player1dimage)
-player1d.place(x=120+xgap*3,y=0)
 
+class playerclass:
+    def __init__(self,myfilename="",xloc=0,yloc=0):
+        self.xloc = xloc
+        self.yloc = yloc
+        self.canvas = Canvas(mainwin, width=64, height = 64)
+        self.image = PhotoImage(file=myfilename)
+        self.sprite = self.canvas.create_image(0,0,anchor=NW,image=self.image)
+        self.canvas.place(x=xloc,y=yloc)
+    def changecard(self,card):
+        self.image = PhotoImage(file=cardfilename(card))
+        self.canvas.itemconfigure(self.sprite, image=self.image)
+        
+playerobjlist = []
+for i in range(8):
+  playerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=0))
 
+computer1objlist = []
+for i in range(8):
+  computer1objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=80))
+
+computer2objlist = []
+for i in range(8):
+  computer2objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=160))
+
+computer3objlist = []
+for i in range(8):
+  computer3objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=240))  
 
 player = []
 
@@ -82,25 +92,15 @@ def cardfilename(cardstring):
 
 
 # cannot use PhotoImage inside a function since the returned pointer is local, and trashed
-# So use global variables to store the returned pointer
-def timerupdate():
-    global player1aimage, player1asprite, player1bimage, player1bsprite, player1cimage, player1csprite, player1dimage, player1dsprite   
+# So use global variables or objects :) to store the returned pointer
+def timerupdate():  # global player1aobj is not required since we
+                    # are not changing the pointer player1aobj
     if len(player) > 0:
      i = 0
      for card in player:
+        print(card)
+        playerobjlist[i].changecard(card)
         i = i + 1
-        if i == 1:
-          player1aimage = PhotoImage(file=cardfilename(card))
-          player1a.itemconfigure(player1asprite, image=player1aimage)
-        if i == 2:
-          player1bimage = PhotoImage(file=cardfilename(card))
-          player1b.itemconfigure(player1bsprite, image=player1bimage)
-        if i == 3:
-          player1cimage = PhotoImage(file=cardfilename(card))
-          player1c.itemconfigure(player1csprite, image=player1cimage)
-        if i == 4:
-          player1dimage = PhotoImage(file=cardfilename(card))
-          player1d.itemconfigure(player1dsprite, image=player1dimage)
      mainwin.after(2000,timerupdate)
 
 
