@@ -7,16 +7,40 @@ import time
 
 mainwin = Tk()
 mainwin.geometry("800x600")
-button1 = Button(mainwin, text="Hello World")
-button1.place(x=170, y = 500)
+
+font1 = ("Arial",12)
+canvasText = Canvas(mainwin, width = 200, height = 600)
+canvasText.place(x=0,y=0)
+def printscr(mytext,x,y):
+    canvasText.create_text(x,y,text=mytext, fill="blue",font=font1, anchor="sw") 
+
+printscr("Human Player:",10,40)
+printscr("Computer 1:",10,40+80)
+printscr("Computer 2:",10,40+80*2)
+printscr("Computer 3:",10,40+80*3)
+printscr("Dealer:",10,50+80*4)
+
+def hit():
+    global playerturn, playerout
+    if playerout == False:
+       player.append(Cards.pop())
+       if total(player) > 21:
+          print("Player busted")
+          playerout = True
+    playerturn = False
+    
+    
+btnHit = Button(mainwin, text="Hit", command=hit)
+btnHit.place(x=170, y = 500)
 
 
 xgap = 60
 
 
-# NEED to store returned pointers as GLOBAL variables
-# CANNOT use PhotoImage inside a function, otherwise
 
+# CANNOT easily use PhotoImage inside a function
+# NEED to store returned pointers as GLOBAL variables
+# objects work well in this case, since they are pointers
 
 class playerclass:
     def __init__(self,myfilename="",xloc=0,yloc=0):
@@ -29,6 +53,7 @@ class playerclass:
     def changecard(self,card):
         self.image = PhotoImage(file=cardfilename(card))
         self.canvas.itemconfigure(self.sprite, image=self.image)
+    
         
 playerobjlist = []
 for i in range(8):
@@ -72,6 +97,9 @@ computer1 = [Cards.pop()]
 computer2 = [Cards.pop()]
 computer3 = [Cards.pop()]
 
+
+
+
 def cardfilename(cardstring):
     suitstring = ""
     if "Hearts" in cardstring:
@@ -91,23 +119,7 @@ def cardfilename(cardstring):
     return "Cards\\"+"card_"+suitstring+"_"+numberstring+".png"
 
 
-# cannot use PhotoImage inside a function since the returned pointer is local, and trashed
-# So use global variables or objects :) to store the returned pointer
-def timerupdate():  # global player1aobj is not required since we
-                    # are not changing the pointer player1aobj
-    if len(player) > 0:
-     i = 0
-     for card in player:
-        print(card)
-        playerobjlist[i].changecard(card)
-        i = i + 1
-     mainwin.after(2000,timerupdate)
 
-
-
-
-mainwin.after(2000,timerupdate)
-mainwin.mainloop()
 
 
 Acefound = False
@@ -119,7 +131,6 @@ Bet = 10
 
 def value(cardstring):
     global Acefound
-    print(cardfilename(cardstring))
     if cardstring[0] in ['2','3','4','5','6','7','8','9']:
         return int(cardstring[0])
     elif cardstring[0] == "A":
@@ -141,13 +152,33 @@ def total(cardlist):
         
 
 
-
+def computerchoice():
+   global computer1out, computer2out, computer3out 
+   if total(computer1) <= 16:
+      computer1.append(Cards.pop())
+      if total(computer1) > 21:
+          print("Computer 1 busted")
+          computer1out = True
+   else:
+      computer1out = True;
+   if total(computer2) <= 17:
+      computer2.append(Cards.pop())
+      if total(computer2) > 21:
+          print("Computer 2 busted")
+          computer2out = True
+   else:
+      computer2out = True;
+   if total(computer3) <= 15:
+      computer3.append(Cards.pop())
+      if total(computer3) > 21:
+          print("Computer 3 busted")
+          computer3out = True
+   else:
+      computer3out = True;
 
 
 def showcards():
-  time.sleep(1)
   print("dealing ...")
-  time.sleep(2)
   print("Dealer: ", dealer)
   print("total = ", total(dealer))
   print("You: ", player)
@@ -166,30 +197,34 @@ computer2out = False;
 computer3out = False;
 playerout = False;
 
+playerturn = True;
 
-def computerchoice():
-   global computer1out, computer2out, computer3out 
-   if total(computer1) <= 14:
-      computer1.append(Cards.pop())
-      if total(computer1) > 21:
-          print("Computer 1 busted")
-          computer1out = True
-   else:
-      computer1out = True;
-   if total(computer2) <= 14:
-      computer2.append(Cards.pop())
-      if total(computer2) > 21:
-          print("Computer 2 busted")
-          computer2out = True
-   else:
-      computer2out = True;
-   if total(computer3) <= 14:
-      computer3.append(Cards.pop())
-      if total(computer3) > 21:
-          print("Computer 3 busted")
-          computer3out = True
-   else:
-      computer3out = True;
+def updatecards(cardlist, cardobjlist): # draw cards on screen
+    i = 0
+    for card in cardlist:
+        cardobjlist[i].changecard(card)
+        i = i + 1
+    
+
+# cannot use PhotoImage inside a function since the returned pointer is local, and trashed
+# So use global variables or objects :) to store the returned pointer
+def timerupdate():  # global player1aobj is not required since we
+                    # are not changing the pointer player1aobj
+    global playerturn
+    updatecards(player, playerobjlist)
+    if not playerturn:
+       computerchoice()
+       playerturn = True
+    updatecards(computer1, computer1objlist)
+    updatecards(computer2, computer2objlist)
+    updatecards(computer3, computer3objlist)
+    mainwin.after(1000,timerupdate)
+
+
+
+
+mainwin.after(1000,timerupdate)
+mainwin.mainloop()
       
 
 
@@ -215,7 +250,6 @@ while  (not playerout) or \
 print("")
 print("Dealers turn")
 print("")
-time.sleep(3)
 
 dealerout = False;
 dealer.append(Cards.pop())
