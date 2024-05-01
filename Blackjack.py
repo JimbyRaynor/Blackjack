@@ -11,30 +11,54 @@ mainwin.geometry("800x600")
 font1 = ("Arial",12)
 canvasText = Canvas(mainwin, width = 200, height = 600)
 canvasText.place(x=0,y=0)
+
 def printscr(mytext,x,y):
     canvasText.create_text(x,y,text=mytext, fill="blue",font=font1, anchor="sw") 
 
-printscr("Human Player:",10,40)
+printscr("You:",10,40)
 printscr("Computer 1:",10,40+80)
 printscr("Computer 2:",10,40+80*2)
 printscr("Computer 3:",10,40+80*3)
 printscr("Dealer:",10,50+80*4)
 
+
+
+xgap = 60
+dealcard = 'y';
+computer1out = False;
+computer2out = False;
+computer3out = False;
+playerout = False;
+dealerout = False;
+
+playerturn = True;
+playerstand = False;
+
+
+
 def hit():
     global playerturn, playerout
-    if playerout == False:
+    if (playerout == False) and (playerstand == False):
        player.append(Cards.pop())
        if total(player) > 21:
           print("Player busted")
           playerout = True
     playerturn = False
     
-    
 btnHit = Button(mainwin, text="Hit", command=hit)
-btnHit.place(x=170, y = 500)
+btnHit.place(x=670, y = 20)
+
+def stand():
+    global playerturn, playerstand, playerout
+    playerturn = False
+    playerout = True
+    playerstand = True
+    
+btnHit = Button(mainwin, text="Stand", command=stand)
+btnHit.place(x=720, y = 20)
 
 
-xgap = 60
+
 
 
 
@@ -71,6 +95,11 @@ computer3objlist = []
 for i in range(8):
   computer3objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=240))  
 
+dealerobjlist = []
+for i in range(8):
+  dealerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=320))  
+
+
 player = []
 
 Nums = ["Ace"]
@@ -92,10 +121,10 @@ random.shuffle(Cards)
 
 dealer = [Cards.pop()] # dealer only gets extra cards after
                        # all other players "stand" or "go bust"
-player = [Cards.pop()]
-computer1 = [Cards.pop()]
-computer2 = [Cards.pop()]
-computer3 = [Cards.pop()]
+player = [Cards.pop(),Cards.pop()]
+computer1 = [Cards.pop(),Cards.pop()]
+computer2 = [Cards.pop(),Cards.pop()]
+computer3 = [Cards.pop(),Cards.pop()]
 
 
 
@@ -149,8 +178,35 @@ def total(cardlist):
        if subtotal+10 <= 21:
            subtotal = subtotal + 10  # one Ace can be 11, so add 10
     return subtotal
-        
 
+def showscore():
+  if total(dealer) > 21:
+    print("Dealer Busted!!")
+  if (total(player) > 21):
+    print("player lost")
+  elif (total(player) > total(dealer)) or (total(dealer) > 21):
+    print("player wins")
+  elif (total(player) == total(dealer)):
+    print("Push (money returned, no loss or gain)")
+  else:
+    print("Player lost")
+
+
+print("Remaining cards in deck: ", len(Cards))
+        
+# after all players have finished, it is the dealers turn
+# must hit if total <= 16
+# must stand if total >= 17
+def dealerturn():
+    global dealerout
+    if not dealerout:
+      if total(dealer) <= 16:
+        dealer.append(Cards.pop())
+      if total(dealer) >= 17:
+        dealerout = True;
+    else:
+        print("Game Over")
+        showscore()
 
 def computerchoice():
    global computer1out, computer2out, computer3out 
@@ -191,13 +247,7 @@ def showcards():
   print("total = ", total(computer3))
   a = input("Press Enter to continue")
 
-dealcard = 'y';
-computer1out = False;
-computer2out = False;
-computer3out = False;
-playerout = False;
 
-playerturn = True;
 
 def updatecards(cardlist, cardobjlist): # draw cards on screen
     i = 0
@@ -212,12 +262,15 @@ def timerupdate():  # global player1aobj is not required since we
                     # are not changing the pointer player1aobj
     global playerturn
     updatecards(player, playerobjlist)
-    if not playerturn:
+    if playerstand:
        computerchoice()
-       playerturn = True
     updatecards(computer1, computer1objlist)
     updatecards(computer2, computer2objlist)
     updatecards(computer3, computer3objlist)
+    updatecards(dealer, dealerobjlist)
+    if playerout and computer1out and computer2out and computer3out:
+        print("dealer playing")
+        dealerturn()
     mainwin.after(1000,timerupdate)
 
 
@@ -228,54 +281,9 @@ mainwin.mainloop()
       
 
 
-while  (not playerout) or \
-       (not computer1out) or (not computer2out) or (not computer3out) :
-   computerchoice()
-   if playerout == False:
-       player.append(Cards.pop())
-   showcards()
-   if total(player) > 21:
-          print("Player busted")
-          playerout = True
-   if playerout == False:
-      dealcard  = input("Deal another card (y/n)?")
-   if dealcard != 'y':
-       playerout = True
-
-# after all players have finished, it is the dealers turn
-# must hit if total <= 16
-# must stand if total >= 17
 
 
-print("")
-print("Dealers turn")
-print("")
 
-dealerout = False;
-dealer.append(Cards.pop())
-while (not dealerout):
-    if total(dealer) <= 16:
-        dealer.append(Cards.pop())
-    if total(dealer) >= 17:
-        dealerout = True;
-    showcards()
-
-if total(dealer) > 21:
-    print("Dealer Busted!!")
-showcards()
-    
-
-if (total(player) > 21):
-    print("player lost")
-elif (total(player) > total(dealer)) or (total(dealer) > 21):
-    print("player wins")
-elif (total(player) == total(dealer)):
-    print("Push (money returned, no loss or gain)")
-else:
-    print("Player lost")
-
-
-print("Remaining cards in deck: ", len(Cards))
 
 
 
