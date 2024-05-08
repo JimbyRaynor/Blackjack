@@ -24,21 +24,19 @@ printscr("Dealer:",10,50+80*4)
 
 
 xgap = 60
-dealcard = 'y';
+
 computer1out = False;
 computer2out = False;
 computer3out = False;
 playerout = False;
 dealerout = False;
-
 playerturn = True;
-playerstand = False;
 
-
+# define on screen buttons
 
 def hit():
-    global playerturn, playerout
-    if (playerout == False) and (playerstand == False):
+    global playerout
+    if playerout == False:
        player.append(Cards.pop())
        if total(player) > 21:
           print("Player busted")
@@ -49,16 +47,25 @@ btnHit = Button(mainwin, text="Hit", command=hit)
 btnHit.place(x=670, y = 20)
 
 def stand():
-    global playerturn, playerstand, playerout
+    global playerturn, playerout
     playerturn = False
     playerout = True
-    playerstand = True
     
 btnHit = Button(mainwin, text="Stand", command=stand)
 btnHit.place(x=720, y = 20)
 
+def exitgame():
+    mainwin.destroy()
+
+btnExit = Button(mainwin, text = "Exit Game", command=exitgame)
+btnExit.place(x=720, y=460)
 
 
+def playagain():
+    dealinitialcards()
+
+btnPlayAgain = Button(mainwin, text = "Play Again", command=playagain)
+btnPlayAgain.place(x=620, y=460)
 
 
 
@@ -80,25 +87,21 @@ class playerclass:
     
         
 playerobjlist = []
-for i in range(8):
-  playerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=0))
-
 computer1objlist = []
-for i in range(8):
-  computer1objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=80))
-
 computer2objlist = []
-for i in range(8):
-  computer2objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=160))
-
 computer3objlist = []
-for i in range(8):
-  computer3objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=240))  
-
 dealerobjlist = []
-for i in range(8):
-  dealerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=320))  
 
+
+def setblankcards():
+    for i in range(8):
+      playerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=0))
+      computer1objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=80))
+      computer2objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=160))
+      computer3objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=240))
+      dealerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=320))  
+
+setblankcards()  
 
 player = []
 
@@ -119,14 +122,39 @@ for s in Suits:
 
 random.shuffle(Cards)
 
-dealer = [Cards.pop()] # dealer only gets extra cards after
+dealer = [] 
+player = []
+computer1 = []
+computer2 = []
+computer3 = []
+
+def dealinitialcards():
+    global dealer, player, computer1, computer2, computer3
+    global computer1out, computer2out, computer3out
+    global playerout, dealerout, playerturn
+    dealer = [Cards.pop()] # dealer only gets extra cards after
                        # all other players "stand" or "go bust"
-player = [Cards.pop(),Cards.pop()]
-computer1 = [Cards.pop(),Cards.pop()]
-computer2 = [Cards.pop(),Cards.pop()]
-computer3 = [Cards.pop(),Cards.pop()]
+    player = [Cards.pop(),Cards.pop()]
+    computer1 = [Cards.pop(),Cards.pop()] 
+    computer2 = [Cards.pop(),Cards.pop()]
+    computer3 = [Cards.pop(),Cards.pop()]
+    computer1out = False;
+    computer2out = False;
+    computer3out = False;
+    playerout = False;
+    dealerout = False;
+    playerturn = True;
+    playerobjlist.clear()
+    computer1objlist.clear()
+    computer2objlist.clear()
+    computer3objlist.clear()
+    dealerobjlist.clear()
+    setblankcards()
+    print("Remaining cards in deck: ", len(Cards))
 
 
+
+dealinitialcards()
 
 
 def cardfilename(cardstring):
@@ -191,8 +219,6 @@ def showscore():
   else:
     print("Player lost")
 
-
-print("Remaining cards in deck: ", len(Cards))
         
 # after all players have finished, it is the dealers turn
 # must hit if total <= 16
@@ -262,7 +288,7 @@ def timerupdate():  # global player1aobj is not required since we
                     # are not changing the pointer player1aobj
     global playerturn
     updatecards(player, playerobjlist)
-    if playerstand:
+    if playerout:
        computerchoice()
     updatecards(computer1, computer1objlist)
     updatecards(computer2, computer2objlist)
