@@ -21,6 +21,9 @@ printscr("Computer 2:",10,40+80*2)
 printscr("Computer 3:",10,40+80*3)
 printscr("Dealer:",10,50+80*4)
 
+labelRemainingcards = canvasText.create_text(10,500,text="Remaining Cards: ", fill="blue",font=font1, anchor="sw") 
+
+
 
 
 xgap = 60
@@ -32,8 +35,113 @@ playerout = False;
 dealerout = False;
 playerturn = True;
 
-# define on screen buttons
 
+
+######################################################################
+# Use objects to draw on screen 
+# CANNOT easily use PhotoImage inside a function
+# NEED to store returned pointers as GLOBAL variables
+# objects work well in this case, since they are pointers
+#####################################################################
+
+class playerclass:
+    def __init__(self,myfilename="",xloc=0,yloc=0):
+        self.xloc = xloc
+        self.yloc = yloc
+        self.canvas = Canvas(mainwin, width=64, height = 64)
+        self.image = PhotoImage(file=myfilename)
+        self.sprite = self.canvas.create_image(0,0,anchor=NW,image=self.image)
+        self.canvas.place(x=xloc,y=yloc)
+    def changecard(self,card):
+        self.image = PhotoImage(file=cardfilename(card))
+        self.canvas.itemconfigure(self.sprite, image=self.image)
+    
+
+#######################################################################
+# Initialise variables
+#######################################################################
+        
+playerobjlist = []
+computer1objlist = []
+computer2objlist = []
+computer3objlist = []
+dealerobjlist = []
+
+
+def setblankcards():
+    for i in range(8):
+      playerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=0))
+      computer1objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=80))
+      computer2objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=160))
+      computer3objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=240))
+      dealerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=320))  
+
+setblankcards()  
+
+player = []
+Cards = []
+
+Nums = ["Ace"]
+
+for i in range(2,11):
+    Nums.append(str(i))
+    
+Nums= Nums+["Jack", "Queen", "King"]
+
+Suits = ["Hearts", "Diamonds", "Spades", "Clubs"]
+
+
+def createdeckofcards():
+    global Cards
+    Cards.clear()
+    for s in Suits:
+       for n in Nums:
+         Cards.append(n+" "+s)
+    random.shuffle(Cards)
+
+createdeckofcards()
+dealer = [] 
+player = []
+computer1 = []
+computer2 = []
+computer3 = []
+Acefound = False
+
+Money = 100
+Bet = 10
+
+def dealinitialcards():
+    global dealer, player, computer1, computer2, computer3
+    global computer1out, computer2out, computer3out
+    global playerout, dealerout, playerturn
+    dealer = [Cards.pop()] # dealer only gets extra cards after
+                       # all other players "stand" or "go bust"
+    player = [Cards.pop(),Cards.pop()]
+    computer1 = [Cards.pop(),Cards.pop()] 
+    computer2 = [Cards.pop(),Cards.pop()]
+    computer3 = [Cards.pop(),Cards.pop()]
+    computer1out = False;
+    computer2out = False;
+    computer3out = False;
+    playerout = False;
+    dealerout = False;
+    playerturn = True;
+    playerobjlist.clear()
+    computer1objlist.clear()
+    computer2objlist.clear()
+    computer3objlist.clear()
+    dealerobjlist.clear()
+    setblankcards()
+
+
+
+dealinitialcards()
+
+
+
+######################################################################
+#  define on screen buttons
+######################################################################
 def hit():
     global playerout
     if playerout == False:
@@ -61,6 +169,9 @@ btnExit = Button(mainwin, text = "Exit Game", command=exitgame)
 btnExit.place(x=720, y=460)
 
 
+btnNewDeck = Button(mainwin, text = "New Deck", command=createdeckofcards)
+btnNewDeck.place(x=500, y=460)
+
 def playagain():
     dealinitialcards()
 
@@ -69,93 +180,9 @@ btnPlayAgain.place(x=620, y=460)
 
 
 
-# CANNOT easily use PhotoImage inside a function
-# NEED to store returned pointers as GLOBAL variables
-# objects work well in this case, since they are pointers
-
-class playerclass:
-    def __init__(self,myfilename="",xloc=0,yloc=0):
-        self.xloc = xloc
-        self.yloc = yloc
-        self.canvas = Canvas(mainwin, width=64, height = 64)
-        self.image = PhotoImage(file=myfilename)
-        self.sprite = self.canvas.create_image(0,0,anchor=NW,image=self.image)
-        self.canvas.place(x=xloc,y=yloc)
-    def changecard(self,card):
-        self.image = PhotoImage(file=cardfilename(card))
-        self.canvas.itemconfigure(self.sprite, image=self.image)
-    
-        
-playerobjlist = []
-computer1objlist = []
-computer2objlist = []
-computer3objlist = []
-dealerobjlist = []
-
-
-def setblankcards():
-    for i in range(8):
-      playerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=0))
-      computer1objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=80))
-      computer2objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=160))
-      computer3objlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=240))
-      dealerobjlist.append(playerclass("Cards\card_back.png",xloc=120+xgap*i,yloc=320))  
-
-setblankcards()  
-
-player = []
-
-Nums = ["Ace"]
-
-for i in range(2,11):
-    Nums.append(str(i))
-
-Nums= Nums+["Jack", "Queen", "King"]
-
-Suits = ["Hearts", "Diamonds", "Spades", "Clubs"]
-
-Cards = []
-
-for s in Suits:
-    for n in Nums:
-        Cards.append(n+" "+s)
-
-random.shuffle(Cards)
-
-dealer = [] 
-player = []
-computer1 = []
-computer2 = []
-computer3 = []
-
-def dealinitialcards():
-    global dealer, player, computer1, computer2, computer3
-    global computer1out, computer2out, computer3out
-    global playerout, dealerout, playerturn
-    dealer = [Cards.pop()] # dealer only gets extra cards after
-                       # all other players "stand" or "go bust"
-    player = [Cards.pop(),Cards.pop()]
-    computer1 = [Cards.pop(),Cards.pop()] 
-    computer2 = [Cards.pop(),Cards.pop()]
-    computer3 = [Cards.pop(),Cards.pop()]
-    computer1out = False;
-    computer2out = False;
-    computer3out = False;
-    playerout = False;
-    dealerout = False;
-    playerturn = True;
-    playerobjlist.clear()
-    computer1objlist.clear()
-    computer2objlist.clear()
-    computer3objlist.clear()
-    dealerobjlist.clear()
-    setblankcards()
-    print("Remaining cards in deck: ", len(Cards))
-
-
-
-dealinitialcards()
-
+######################################################################
+# Define card functions for playing blackjack
+######################################################################
 
 def cardfilename(cardstring):
     suitstring = ""
@@ -174,17 +201,6 @@ def cardfilename(cardstring):
         numberstring = '10'
     else: numberstring = cardstring[0] # must be A, J, Q, K
     return "Cards\\"+"card_"+suitstring+"_"+numberstring+".png"
-
-
-
-
-
-Acefound = False
-
-Money = 100
-Bet = 10
-
-
 
 def value(cardstring):
     global Acefound
@@ -258,21 +274,9 @@ def computerchoice():
    else:
       computer3out = True;
 
-
-def showcards():
-  print("dealing ...")
-  print("Dealer: ", dealer)
-  print("total = ", total(dealer))
-  print("You: ", player)
-  print("total = ", total(player))
-  print("Computer 1:", computer1)
-  print("total = ", total(computer1))
-  print("Computer 2:", computer2)
-  print("total = ", total(computer2))
-  print("Computer 3:", computer3)
-  print("total = ", total(computer3))
-  a = input("Press Enter to continue")
-
+######################################################################
+# Update cards on screen, while playing
+######################################################################
 
 
 def updatecards(cardlist, cardobjlist): # draw cards on screen
@@ -280,6 +284,7 @@ def updatecards(cardlist, cardobjlist): # draw cards on screen
     for card in cardlist:
         cardobjlist[i].changecard(card)
         i = i + 1
+    canvasText.itemconfigure(labelRemainingcards,text="Remaining cards: "+ str(len(Cards)))                    
     
 
 # cannot use PhotoImage inside a function since the returned pointer is local, and trashed
@@ -297,12 +302,10 @@ def timerupdate():  # global player1aobj is not required since we
     if playerout and computer1out and computer2out and computer3out:
         print("dealer playing")
         dealerturn()
-    mainwin.after(1000,timerupdate)
+    mainwin.after(50,timerupdate)
 
 
-
-
-mainwin.after(1000,timerupdate)
+mainwin.after(50,timerupdate)
 mainwin.mainloop()
       
 
