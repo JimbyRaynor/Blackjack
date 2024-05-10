@@ -12,6 +12,9 @@ font1 = ("Arial",12)
 canvasText = Canvas(mainwin, width = 200, height = 600)
 canvasText.place(x=0,y=0)
 
+###################################################################################
+## Print text (labels) on screen
+#################################################################################
 def printscr(mytext,x,y):
     canvasText.create_text(x,y,text=mytext, fill="blue",font=font1, anchor="sw") 
 
@@ -22,19 +25,8 @@ printscr("Computer 3:",10,40+80*3)
 printscr("Dealer:",10,50+80*4)
 
 labelRemainingcards = canvasText.create_text(10,500,text="Remaining Cards: ", fill="blue",font=font1, anchor="sw") 
-
-
-
-
-xgap = 60
-
-computer1out = False;
-computer2out = False;
-computer3out = False;
-playerout = False;
-dealerout = False;
-playerturn = True;
-
+labelBalance = canvasText.create_text(10,540,text="Balance: $", fill="blue",font=font1, anchor="sw") 
+labelBet = canvasText.create_text(10,580,text="Bet: $", fill="blue",font=font1, anchor="sw") 
 
 
 ######################################################################
@@ -60,6 +52,19 @@ class playerclass:
 #######################################################################
 # Initialise variables
 #######################################################################
+
+Money = 90
+Bet = 10
+
+xgap = 60
+
+computer1out = False
+computer2out = False
+computer3out = False
+playerout = False
+dealerout = False
+playerturn = True
+GameOver = False
         
 playerobjlist = []
 computer1objlist = []
@@ -107,8 +112,7 @@ computer2 = []
 computer3 = []
 Acefound = False
 
-Money = 100
-Bet = 10
+
 
 def dealinitialcards():
     global dealer, player, computer1, computer2, computer3
@@ -173,7 +177,10 @@ btnNewDeck = Button(mainwin, text = "New Deck", command=createdeckofcards)
 btnNewDeck.place(x=500, y=460)
 
 def playagain():
+    global Money, GameOver
     dealinitialcards()
+    Money = Money - Bet
+    GameOver = False
 
 btnPlayAgain = Button(mainwin, text = "Play Again", command=playagain)
 btnPlayAgain.place(x=620, y=460)
@@ -224,14 +231,17 @@ def total(cardlist):
     return subtotal
 
 def showscore():
+  global Money  
   if total(dealer) > 21:
     print("Dealer Busted!!")
   if (total(player) > 21):
     print("player lost")
   elif (total(player) > total(dealer)) or (total(dealer) > 21):
     print("player wins")
+    Money = Money + 2*Bet
   elif (total(player) == total(dealer)):
     print("Push (money returned, no loss or gain)")
+    Money = Money + Bet
   else:
     print("Player lost")
 
@@ -240,7 +250,7 @@ def showscore():
 # must hit if total <= 16
 # must stand if total >= 17
 def dealerturn():
-    global dealerout
+    global dealerout, GameOver
     if not dealerout:
       if total(dealer) <= 16:
         dealer.append(Cards.pop())
@@ -248,6 +258,7 @@ def dealerturn():
         dealerout = True;
     else:
         print("Game Over")
+        GameOver = True
         showscore()
 
 def computerchoice():
@@ -285,13 +296,14 @@ def updatecards(cardlist, cardobjlist): # draw cards on screen
         cardobjlist[i].changecard(card)
         i = i + 1
     canvasText.itemconfigure(labelRemainingcards,text="Remaining cards: "+ str(len(Cards)))                    
-    
+    canvasText.itemconfigure(labelBalance,text="Balance: $"+ str(Money))
+    canvasText.itemconfigure(labelBet,text="Bet: $"+ str(Bet))
 
 # cannot use PhotoImage inside a function since the returned pointer is local, and trashed
 # So use global variables or objects :) to store the returned pointer
 def timerupdate():  # global player1aobj is not required since we
                     # are not changing the pointer player1aobj
-    global playerturn
+    global playerturn, GameOver
     updatecards(player, playerobjlist)
     if playerout:
        computerchoice()
@@ -299,13 +311,13 @@ def timerupdate():  # global player1aobj is not required since we
     updatecards(computer2, computer2objlist)
     updatecards(computer3, computer3objlist)
     updatecards(dealer, dealerobjlist)
-    if playerout and computer1out and computer2out and computer3out:
+    if playerout and computer1out and computer2out and computer3out and not GameOver:
         print("dealer playing")
         dealerturn()
-    mainwin.after(50,timerupdate)
+    mainwin.after(2000,timerupdate)
 
 
-mainwin.after(50,timerupdate)
+mainwin.after(10,timerupdate)
 mainwin.mainloop()
       
 
