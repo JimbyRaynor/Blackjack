@@ -112,18 +112,23 @@ computer2 = []
 computer3 = []
 Acefound = False
 
-
+def getcard():
+    if len(Cards) > 0:
+        return Cards.pop()
+    else:
+        createdeckofcards()
+        return Cards.pop()
 
 def dealinitialcards():
     global dealer, player, computer1, computer2, computer3
     global computer1out, computer2out, computer3out
     global playerout, dealerout, playerturn
-    dealer = [Cards.pop()] # dealer only gets extra cards after
+    dealer = [getcard()] # dealer only gets extra cards after
                        # all other players "stand" or "go bust"
-    player = [Cards.pop(),Cards.pop()]
-    computer1 = [Cards.pop(),Cards.pop()] 
-    computer2 = [Cards.pop(),Cards.pop()]
-    computer3 = [Cards.pop(),Cards.pop()]
+    player = [getcard(),getcard()]
+    computer1 = [getcard(),getcard()] 
+    computer2 = [getcard(),getcard()]
+    computer3 = [getcard(),getcard()]
     computer1out = False;
     computer2out = False;
     computer3out = False;
@@ -149,7 +154,7 @@ dealinitialcards()
 def hit():
     global playerout
     if playerout == False:
-       player.append(Cards.pop())
+       player.append(getcard())
        if total(player) > 21:
           print("Player busted")
           playerout = True
@@ -171,10 +176,6 @@ def exitgame():
 
 btnExit = Button(mainwin, text = "Exit Game", command=exitgame)
 btnExit.place(x=720, y=460)
-
-
-btnNewDeck = Button(mainwin, text = "New Deck", command=createdeckofcards)
-btnNewDeck.place(x=500, y=460)
 
 def playagain():
     global Money, GameOver
@@ -245,6 +246,7 @@ def showscore():
   else:
     print("Player lost")
 
+
         
 # after all players have finished, it is the dealers turn
 # must hit if total <= 16
@@ -253,7 +255,7 @@ def dealerturn():
     global dealerout, GameOver
     if not dealerout:
       if total(dealer) <= 16:
-        dealer.append(Cards.pop())
+        dealer.append(getcard())
       if total(dealer) >= 17:
         dealerout = True;
     else:
@@ -264,21 +266,21 @@ def dealerturn():
 def computerchoice():
    global computer1out, computer2out, computer3out 
    if total(computer1) <= 16:
-      computer1.append(Cards.pop())
+      computer1.append(getcard())
       if total(computer1) > 21:
           print("Computer 1 busted")
           computer1out = True
    else:
       computer1out = True;
    if total(computer2) <= 17:
-      computer2.append(Cards.pop())
+      computer2.append(getcard())
       if total(computer2) > 21:
           print("Computer 2 busted")
           computer2out = True
    else:
       computer2out = True;
    if total(computer3) <= 15:
-      computer3.append(Cards.pop())
+      computer3.append(getcard())
       if total(computer3) > 21:
           print("Computer 3 busted")
           computer3out = True
