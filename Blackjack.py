@@ -5,28 +5,33 @@ from tkinter import *
 import random
 import time
 
-mainwin = Tk()
+clTable = "#00AF00" # colour of our card table (light green)
+mainwin = Tk(className=" Blackjack Card Game")
 mainwin.geometry("800x600")
+mainwin["background"] = clTable
 
-font1 = ("Arial",12)
-canvasText = Canvas(mainwin, width = 200, height = 600)
+font1 = ("Arial",12,"bold")
+canvasText = Canvas(mainwin, width = 200, height = 600, bg=clTable, highlightthickness=0)
 canvasText.place(x=0,y=0)
 
 ###################################################################################
 ## Print text (labels) on screen
 #################################################################################
 def printscr(mytext,x,y):
-    canvasText.create_text(x,y,text=mytext, fill="blue",font=font1, anchor="sw") 
+    canvasText.create_text(x,y,text=mytext, fill="white",font=font1, anchor="sw") 
 
 printscr("You:",10,40)
-printscr("Computer 1:",10,40+80)
-printscr("Computer 2:",10,40+80*2)
-printscr("Computer 3:",10,40+80*3)
+printscr("Ace Bot:",10,40+80)
+printscr("Lucky Larry:",10,40+80*2)
+printscr("Ruby:",10,40+80*3)
 printscr("Dealer:",10,50+80*4)
 
-labelRemainingcards = canvasText.create_text(10,500,text="Remaining Cards: ", fill="blue",font=font1, anchor="sw") 
-labelBalance = canvasText.create_text(10,540,text="Balance: $", fill="blue",font=font1, anchor="sw") 
-labelBet = canvasText.create_text(10,580,text="Bet: $", fill="blue",font=font1, anchor="sw") 
+labelRemainingcards = canvasText.create_text(10,500,text="Remaining Cards: ", fill="white",font=font1, anchor="sw") 
+labelBalance = canvasText.create_text(10,540,text="Balance: $", fill="white",font=font1, anchor="sw") 
+labelBet = canvasText.create_text(10,580,text="Bet: $", fill="white",font=font1, anchor="sw") 
+
+statustext = Text(mainwin,width = 38, height = 10, fg="white", bg = clTable, font=font1)
+statustext.place(x=200,y=400)
 
 
 ######################################################################
@@ -40,19 +45,30 @@ class playerclass:
     def __init__(self,myfilename="",xloc=0,yloc=0):
         self.xloc = xloc
         self.yloc = yloc
-        self.canvas = Canvas(mainwin, width=64, height = 64)
+        self.canvas = Canvas(mainwin, width=64, height = 64,bg=clTable, highlightthickness=0)
         self.image = PhotoImage(file=myfilename)
-        self.sprite = self.canvas.create_image(0,0,anchor=NW,image=self.image)
+        self.sprite = self.canvas.create_image(2,2,anchor=NW,image=self.image)
         self.canvas.place(x=xloc,y=yloc)
     def changecard(self,card):
         self.image = PhotoImage(file=cardfilename(card))
         self.canvas.itemconfigure(self.sprite, image=self.image)
-    
+
+
+class messageclass:
+    def __init__(self,myfilename="",xloc=0,yloc=0):
+        self.xloc = xloc
+        self.yloc = yloc
+        self.canvas = Canvas(mainwin, width=194, height = 49)
+        self.image = PhotoImage(file=myfilename)
+        self.sprite = self.canvas.create_image(2,2,anchor=NW,image=self.image)
+        self.canvas.place(x=xloc,y=yloc)
+    def changecard(self,card):
+        self.image = PhotoImage(file=cardfilename(card))
+        self.canvas.itemconfigure(self.sprite, image=self.image)    
 
 #######################################################################
 # Initialise variables
 #######################################################################
-
 Money = 90
 Bet = 10
 
@@ -156,25 +172,27 @@ def hit():
     if playerout == False:
        player.append(getcard())
        if total(player) > 21:
-          print("Player busted")
+          statustext.insert(INSERT,"Player busted\n")
           playerout = True
     playerturn = False
-    
-btnHit = Button(mainwin, text="Hit", command=hit)
-btnHit.place(x=670, y = 20)
+
+btnHitImage = PhotoImage(file="btnHit.png")
+btnHit = Button(mainwin, image=btnHitImage, command=hit, borderwidth=0, highlightthickness=0,bg=clTable,activebackground=clTable)
+btnHit.place(x=610, y = 10)
 
 def stand():
     global playerturn, playerout
     playerturn = False
     playerout = True
-    
-btnHit = Button(mainwin, text="Stand", command=stand)
-btnHit.place(x=720, y = 20)
+
+btnStandImage = PhotoImage(file="btnStand.png")
+btnStand = Button(mainwin, image=btnStandImage, command=stand, borderwidth=0, highlightthickness=0, bg=clTable,activebackground=clTable)
+btnStand.place(x=670, y = 10)
 
 def exitgame():
     mainwin.destroy()
 
-btnExit = Button(mainwin, text = "Exit Game", command=exitgame)
+btnExit = Button(mainwin, text = "Exit Game", command=exitgame,bg="green")
 btnExit.place(x=720, y=460)
 
 def playagain():
@@ -182,8 +200,9 @@ def playagain():
     dealinitialcards()
     Money = Money - Bet
     GameOver = False
+    statustext.delete("1.0",END)
 
-btnPlayAgain = Button(mainwin, text = "Play Again", command=playagain)
+btnPlayAgain = Button(mainwin, text = "Play Again", command=playagain,bg="green", activebackground="red")
 btnPlayAgain.place(x=620, y=460)
 
 
@@ -234,17 +253,17 @@ def total(cardlist):
 def showscore():
   global Money  
   if total(dealer) > 21:
-    print("Dealer Busted!!")
+    statustext.insert(INSERT,"Dealer Busted!!\n")
   if (total(player) > 21):
-    print("player lost")
+    statustext(INSERT,"player lost\n")
   elif (total(player) > total(dealer)) or (total(dealer) > 21):
-    print("player wins")
+    statustext.insert(INSERT,"player wins\n")
     Money = Money + 2*Bet
   elif (total(player) == total(dealer)):
-    print("Push (money returned, no loss or gain)")
+    statustext.insert(INSERT,"Push (money returned, no loss or gain)\n")
     Money = Money + Bet
   else:
-    print("Player lost")
+    statustext.insert(INSERT,"Player lost\n")
 
 
         
@@ -259,7 +278,7 @@ def dealerturn():
       if total(dealer) >= 17:
         dealerout = True;
     else:
-        print("Game Over")
+        statustext.insert(INSERT,"Game Over\n")
         GameOver = True
         showscore()
 
@@ -268,21 +287,21 @@ def computerchoice():
    if total(computer1) <= 16:
       computer1.append(getcard())
       if total(computer1) > 21:
-          print("Computer 1 busted")
+          statustext.insert(INSERT,"Ace Bot is busted!!! \n")
           computer1out = True
    else:
       computer1out = True;
    if total(computer2) <= 17:
       computer2.append(getcard())
       if total(computer2) > 21:
-          print("Computer 2 busted")
+          statustext.insert(INSERT,"Lucky Larry is busted!!! \n")
           computer2out = True
    else:
       computer2out = True;
    if total(computer3) <= 15:
       computer3.append(getcard())
       if total(computer3) > 21:
-          print("Computer 3 busted")
+          statustext.insert(INSERT,"Ruby is busted!!! \n")
           computer3out = True
    else:
       computer3out = True;
@@ -314,9 +333,9 @@ def timerupdate():  # global player1aobj is not required since we
     updatecards(computer3, computer3objlist)
     updatecards(dealer, dealerobjlist)
     if playerout and computer1out and computer2out and computer3out and not GameOver:
-        print("dealer playing")
+        statustext.insert(INSERT,"Dealer playing \n")
         dealerturn()
-    mainwin.after(2000,timerupdate)
+    mainwin.after(500,timerupdate)
 
 
 mainwin.after(10,timerupdate)
